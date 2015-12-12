@@ -9,11 +9,11 @@ import scala.collection.mutable.ListBuffer
   */
 class SparkSequence {
 
-  def  getImageSplits() : java.util.List[ImageSplits] =  {
+  def  getImageSplits(hdfsFileName: String) : java.util.List[ImageSplits] =  {
 
     val conf = new SparkConf().setAppName("Nidan ImageSplitter")
     val sc = new SparkContext(conf)
-    val file = sc.sequenceFile("hdfs://localhost:9000/outimage.jpg", classOf[IntWritable],classOf[BytesWritable])
+    val file = sc.sequenceFile(hdfsFileName, classOf[IntWritable],classOf[BytesWritable])
     val rddData = file.map{case (x,y) => (x.get(), y.copyBytes())}
     val sortedData = rddData.sortByKey(true).collect().toList
     //val sortedData = rddData.collect().toList

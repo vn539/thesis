@@ -12,24 +12,21 @@ import scala.collection.mutable._
   */
 class SparkPartitioner {
 
-  def saveImage(imageSplits: java.util.List[ImageSplits])
+  def saveImage(imageSplits: java.util.List[ImageSplits], hdfsFileName: String)
   {
-    println("Hello (class)")
+    println(hdfsFileName)
 
     var imageList = new ListBuffer[Tuple2[Int, Array[Byte]]]()
     var i = 0
+
     //loop through each item in imageSplits, create a Tuple2 and add to scala list
     while (i < imageSplits.size())
     {
       var zcoord: Int = imageSplits.get(i).zcoord
       var imageChuck: Array[Byte] = imageSplits.get(i).splitImage
 
-      //println("imageChuck length")
-      //println(imageChuck.length)
-
       imageList += (new Tuple2(zcoord, imageChuck))
       i += 1
-      //println(zcoord)
     }
 
     val pairList = imageList.toList
@@ -44,7 +41,7 @@ class SparkPartitioner {
     val input = data.map{case (x,y) => (x.get(),y.getBytes)}
     val tunedPartitioner = new RangePartitioner(5, input)
     val partitioner = input.partitionBy(tunedPartitioner)
-    partitioner.saveAsSequenceFile("hdfs://localhost:9000/outimage.jpg")
+    partitioner.saveAsSequenceFile(hdfsFileName)
 
   }
 }

@@ -22,7 +22,6 @@ public class ImageSplitter {
 
     private static String interleave(String icoord, String jcoord)
     {
-
         char x[] = icoord.toCharArray();
         char y[] = jcoord.toCharArray();
 
@@ -37,12 +36,12 @@ public class ImageSplitter {
         return sb.toString();
     }
 
-
     public static void main(String[] args) throws Exception {
-
-
-            File file = new File("/home/vinu/Desktop/bear.jpg"); // Splitting an image
-
+            // args[0] = rows
+            // args[1] = cols
+            // args[2] = input full path and file name
+            // args[3] = hdfs full path and file name
+            File file = new File(args[2]); // Splitting an image
             FileInputStream fis = new FileInputStream(file);
             BufferedImage image = ImageIO.read(fis); //reading the image file
 
@@ -92,6 +91,6 @@ public class ImageSplitter {
             System.out.println("Splitting done");
 
             SparkPartitioner sp = new SparkPartitioner();
-            sp.saveImage(imageSplits);
+            sp.saveImage(imageSplits, args[3]);
     }
 }

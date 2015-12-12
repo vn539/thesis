@@ -65,13 +65,17 @@ public class ImageMerge {
 
 
         /**/
+        // args[0] = hdfs full path and file name to read
+        // args[1] = output full path and file name for merge image, default jpg
+        String fileName = args[0];
+        String outputFileName = args[1];
         SparkSequence ss = new SparkSequence();
-        List<ImageSplits> imageSplits =  ss.getImageSplits();
+        List<ImageSplits> imageSplits =  ss.getImageSplits(fileName);
         System.out.println("imageSplits.size() =  " + imageSplits.size());
 
         for (ImageSplits imageSplit : imageSplits)
         {
-            write(imageSplit.splitImage, "/home/vinu/Desktop/finaloutmsg_" + imageSplit.zcoord + ".jpg");
+            write(imageSplit.splitImage, outputFileName + imageSplit.zcoord + ".jpg");
         }
         /**/
 
