@@ -1,3 +1,4 @@
+import java.util.Calendar
 import javax.imageio.ImageIO
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
 
@@ -23,11 +24,14 @@ object HDFSToLocal {
     val hdfsFileName = args(0)
     val outputFileName = args(1)
 
+    println("Start-Time = " + Calendar.getInstance().getTime())
+
     val conf = new SparkConf().setAppName("Nidan ImageSplitter")
     val sc = new SparkContext(conf)
     val file = sc.sequenceFile(hdfsFileName, classOf[IntWritable],classOf[BytesWritable])
     val rddData = file.map{case (x,y) => (x.get(), y.copyBytes())}
-    val sortedData = rddData.sortByKey(true).collect().toList
+   // val sortedData = rddData.sortByKey(true).collect().toList
+   val sortedData = rddData.collect().toList
 
     print("sortedData.length = ")
     println(sortedData.length)
@@ -42,6 +46,7 @@ object HDFSToLocal {
       val bufferedImage = ImageIO.read(bais)
       ImageIO.write(bufferedImage, "jpg", new File(outputFileName + x._1.toString() + ".jpg"))
     }
+    println("End-Time = " + Calendar.getInstance().getTime())
 
   }
 

@@ -1,6 +1,7 @@
 import java.io.{ByteArrayOutputStream, File}
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
+import java.util.Calendar
 
 import org.apache.spark._
 import org.apache.spark.SparkContext._
@@ -19,6 +20,8 @@ object ImageToHDFS {
     // args(0) = split image directory
     // args(1) = HDFS full path and file name to store
     // args(2) = user partition - Y/N
+    // args(3) = number of partition
+    println("Start-Time = " + Calendar.getInstance().getTime())
     if (args.length < 2)
     {
       System.err.println("Usage: HDFSToLocal {local input image dir} {hdfs output filename} {optional: use partition=Y/N}")
@@ -33,7 +36,7 @@ object ImageToHDFS {
     println("args(0) = " + args(0))   // split image directory
     println("args(1) = " + args(1))   // HDFS full path and file name to store
 
-    if (args.length == 3)
+    if (args.length == 4)
     {
       println("args(2) = " + args(2))   // use partition = Y/N
       usePartition = args(2)
@@ -72,8 +75,8 @@ object ImageToHDFS {
     if (usePartition.equalsIgnoreCase("Y"))
     {
       println("using range partition to store")
-      val tunedPartitioner = new RangePartitioner(5, input)
-      val partitioner = input.partitionBy(tunedPartitioner)
+      val tunedPartitioner = new RangePartitioner(args(3).toInt, input)
+      val partitioner = input.partitionBy(tunedPartitioner).persist()
       partitioner.saveAsSequenceFile(hdfsFileName)
     }
     else
@@ -81,6 +84,8 @@ object ImageToHDFS {
       println("not using range partition to store")
       input.saveAsSequenceFile(hdfsFileName)
     }
+
+    println("End-Time = " + Calendar.getInstance().getTime())
 
   }
 
