@@ -78,6 +78,9 @@ object CombinedReadAndWrite {
        // val rangebeforesequencefile=partitioner.collectAsMap()
         //println("end collect time before sequence file " + Calendar.getInstance().getTime())
         partitioner.saveAsSequenceFile(hdfsFileName)
+
+
+
       }
       else
       {
@@ -99,13 +102,18 @@ object CombinedReadAndWrite {
       println("Start sc.sequenceFile() = " + Calendar.getInstance().getTime())
       val file = sc.sequenceFile(hdfsFileName, classOf[IntWritable],classOf[BytesWritable])
       println("Start map() = " + Calendar.getInstance().getTime())
-      val rddData = file.map{case (x,y) => (x.get(), y.copyBytes())}
+      val rddData = file.map{case (x,y) => (x.get(), y.copyBytes())}.cache()
 
       val persistedRDDs = sc.getPersistentRDDs
       println("persistedRDDs size " + persistedRDDs.size)
+      println("Before calling lookup()" + Calendar.getInstance().getTime())
+      val llokupRDD = rddData.lookup(10)
+      println("After calling lookup() " + Calendar.getInstance().getTime())
 
+//      println("Before calling countByKey()" + Calendar.getInstance().getTime())
+//      val keyMap = rddData.countByKey()
+//      println("After calling countByKey() " + Calendar.getInstance().getTime())
      // println("Start-collect time = " + Calendar.getInstance().getTime())
-
 
       //val valuesRDD=rddData.values
       //println("end-collect time = " + Calendar.getInstance().getTime())
@@ -117,10 +125,19 @@ object CombinedReadAndWrite {
 
      // println("end-value time = " + Calendar.getInstance().getTime())
 
+      println("Start foreach = " + Calendar.getInstance().getTime())
+      rddData.foreach(f => {
+        println("Key = " + f._1.toString())
+        println("Start write time = " + Calendar.getInstance().getTime())
+        //      write(f._2, outputFileName + f._1.toString() + ".png")
+        println("End write time = " + Calendar.getInstance().getTime())
+        val binData = f._2
+      })
+      println("End foreach = " + Calendar.getInstance().getTime())
+
 //      println("Start-collect time to list = " + Calendar.getInstance().getTime())
 //      val sortedData = rddData.collect().toList
 //      println("end-collect time to list= " + Calendar.getInstance().getTime())
-//
 //      println("Start-write time = " + Calendar.getInstance().getTime())
 //
 //     //Print all the array elements
@@ -129,18 +146,18 @@ object CombinedReadAndWrite {
 //        //  println( x._1 )
 //        // println( x._2.length )
 //        write(x._2, "/users/vn539/OutputSplits/img_" + x._1.toString() + ".png")
-//
 //      }
-
-      println("Start toLocalIterator time to list = " + Calendar.getInstance().getTime())
-      val it = rddData.toLocalIterator
-      while (it.hasNext)
-      {
-        val keyval = it.next()
-        println("keyval._1.toString" + keyval._1.toString)
-        write(keyval._2, "/users/vn539/OutputSplits/img_" + keyval._1.toString() + ".png")
-      }
-      println("End toLocalIterator time to list = " + Calendar.getInstance().getTime())
+//
+//      println("Start toLocalIterator time to list = " + Calendar.getInstance().getTime())
+//      val it = rddData.toLocalIterator
+//      while (it.hasNext)
+//      {
+//        val keyval = it.next()
+//        println("keyval._1.toString" + keyval._1.toString)
+////        write(keyval._2, "/users/vn539/OutputSplits/img_" + keyval._1.toString() + ".png")
+//        val binData = keyval._2
+//      }
+//      println("End toLocalIterator time to list = " + Calendar.getInstance().getTime())
 
       println("End-write time = " + Calendar.getInstance().getTime())
     }
