@@ -1,3 +1,4 @@
+import java.net.Socket
 import java.util.Calendar
 import javax.imageio.ImageIO
 import java.io._
@@ -33,9 +34,9 @@ object HDFSToLocal {
     val file = sc.sequenceFile(hdfsFileName, classOf[IntWritable],classOf[BytesWritable])
 
     println("Start map() = " + Calendar.getInstance().getTime())
-    val rddData = file.map{case (x,y) => (x.get(), y.copyBytes())}.cache()
+    val rddData = file.map{case (x,y) => (x.get(), y.copyBytes())}
 
-    val tunedPartitioner = new RangePartitioner(12, rddData)
+    val tunedPartitioner = new RangePartitioner(args(2).toInt, rddData)
     println("Before caching " + sc.getPersistentRDDs.size)
     val partitioner = rddData.partitionBy(tunedPartitioner).cache()
 //
@@ -45,17 +46,35 @@ object HDFSToLocal {
 
 
 //    println("Before calling countByKey()" + Calendar.getInstance().getTime())
-//       val keyMap = rddData.countByKey()
+//       val keyMap = partitioner.countByKey()
 //         println("After calling countByKey() " + Calendar.getInstance().getTime())
+
+//        println("Before calling collect()" + Calendar.getInstance().getTime())
+//           val keyMap = partitioner.collect()
+//             println("After calling collect() " + Calendar.getInstance().getTime())
 
     println("Start foreach = " + Calendar.getInstance().getTime())
     //rddData.foreach(f => {
     partitioner.foreach(f => {
       println("Key = " + f._1.toString())
       println("Start write time = " + Calendar.getInstance().getTime())
-      //      write(f._2, outputFileName + f._1.toString() + ".png")
+//      write(f._2, outputFileName + f._1.toString() + ".png")
+      val clientSocket: Socket = new Socket("128.110.153.7", 5432)
+      println("Connected to the Socket server: " + clientSocket.toString())
+
+      val key: String = "Store for key = " + f._1.toString()
+      val outputStream = clientSocket.getOutputStream()
+      outputStream.write(key.getBytes())
+      outputStream.flush()
+
+      outputStream.write(f._2)
+      outputStream.flush()
+
+      outputStream.close()
+      clientSocket.close()
+
       println("End write time = " + Calendar.getInstance().getTime())
-      val binData = f._2
+     // val binData = f._2
     })
     println("End foreach = " + Calendar.getInstance().getTime())
 
