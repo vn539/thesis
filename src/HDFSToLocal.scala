@@ -62,7 +62,17 @@ object HDFSToLocal {
       val clientSocket: Socket = new Socket("128.110.153.7", 5432)
       println("Connected to the Socket server: " + clientSocket.toString())
 
-      val key: String = "Store for key = " + f._1.toString()
+      var key: String = "Store for key = "
+      if (f._1.toString().length() == 1)
+      {
+        key = "Store for key = 0" + f._1.toString()
+      }
+      else
+      {
+        key = "Store for key = " + f._1.toString()
+
+      }
+
       val outputStream = clientSocket.getOutputStream()
       outputStream.write(key.getBytes())
       outputStream.flush()

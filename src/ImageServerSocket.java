@@ -12,8 +12,7 @@ public class ImageServerSocket
     public static void main(String[] args) throws IOException {
 
         ServerSocket serverSocket = null;
-        //List<byte[]> imageSplits = new ArrayList<String, byte[]>();
-        byte[] imageSplitData = null;
+        List<ImageSplits> imageSplits = new ArrayList<ImageSplits>();
 
         try {
             serverSocket = new ServerSocket(5432);
@@ -24,25 +23,33 @@ public class ImageServerSocket
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Got connection from " + clientSocket.getInetAddress() + " at port: " + clientSocket.getPort());
 
-                BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                String requestType = br.readLine();
-
-                System.out.println("first read = " + requestType);
+                byte[] bytes = new byte[18];
 
                 InputStream in = clientSocket.getInputStream();
+                in.read(bytes);
+                String requestType = new String(bytes);
+                System.out.println("first read = " + requestType);
 
-                byte[] bytes = new byte[16*1024];
+                bytes = new byte[16*1024];
 
                 if (requestType.startsWith("Store for key"))
                 {
-                    OutputStream out = new FileOutputStream("/users/vn539/OutputSplits/img_test.png");
+                    //OutputStream out = new FileOutputStream("/users/vn539/OutputSplits/img_test.png");
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
                     int count;
                     while ((count = in.read(bytes)) > 0) {
                         out.write(bytes, 0, count);
                     }
 
-                    imageSplitData = bytes;
-                    System.out.println("imageSplitData.length = " + imageSplitData.length);
+                    ImageSplits imageSplit = new ImageSplits();
+                    imageSplit.splitImage = out.toByteArray();
+                    System.out.println("imageSplit.splitImage.length = " + imageSplit.splitImage.length);
+
+                    String zcoord = requestType.substring(requestType.indexOf("= ") + 2);
+                    System.out.println("zcoord = " + zcoord);
+                    imageSplit.zcoord = Integer.parseInt(zcoord);
+
+                    imageSplits.add(imageSplit);
                     out.close();
                 }
                 else if(requestType.startsWith("Get for key"))
@@ -60,7 +67,6 @@ public class ImageServerSocket
                 }
 
                 in.close();
-                br.close();
                 clientSocket.close();
             }
 
