@@ -75,7 +75,7 @@ public class SplitImageJ {
                 int zcoord = new Integer(Integer.parseInt(interleavevalue, 2)).intValue();
 
             //    ImageIO.write(imgs[count], "jpg", new File("/home/vinu/Desktop/TestCase1/img_" + zcoord + ".jpg"));
-                  ImageIO.write(imgs[count], "jpg", new File(args[3] + zcoord + "_img.jpg"));
+                  ImageIO.write(imgs[count], "png", new File(args[3] + zcoord + "_img.png"));
                 count++;
             }
         }

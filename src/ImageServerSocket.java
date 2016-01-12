@@ -46,7 +46,7 @@ public class ImageServerSocket
                     System.out.println("imageSplit.splitImage.length = " + imageSplit.splitImage.length);
 
                     String zcoord = requestType.substring(requestType.indexOf("= ") + 2);
-                    System.out.println("zcoord = " + zcoord);
+                    System.out.println("zcoord = " + Integer.parseInt(zcoord));
                     imageSplit.zcoord = Integer.parseInt(zcoord);
 
                     imageSplits.add(imageSplit);
@@ -54,16 +54,24 @@ public class ImageServerSocket
                 }
                 else if(requestType.startsWith("Get for key"))
                 {
-//                    System.out.println("imageSplitData.length = " + imageSplitData.length);
-//                    OutputStream out = new BufferedOutputStream(clientSocket.getOutputStream());
-//                    out.write(imageSplitData);
-//                    out.close();
+                    String zcoord = requestType.substring(requestType.indexOf("= ") + 2);
+                    int izcoord = Integer.parseInt(zcoord);
+                    System.out.println("zcoord = " + izcoord);
 
-                    System.out.println("Sending sample-png.png from server to client");
+                    System.out.println("Sending image split from server to client for zcoord = " + izcoord);
                     OutputStream out = clientSocket.getOutputStream();
-                    out.write(read("/users/vn539/Test2/0_img.png"));
-                    out.close();
 
+                    for (ImageSplits imageSplit : imageSplits)
+                    {
+                        if (imageSplit.zcoord == izcoord)
+                        {
+                            out.write(imageSplit.splitImage);
+                            break;
+                        }
+                    }
+
+                    out.flush();
+                    out.close();
                 }
 
                 in.close();
@@ -79,34 +87,5 @@ public class ImageServerSocket
 
             serverSocket.close();
         }
-    }
-
-    /** Read the given binary file, and return its contents as a byte array.*/
-    private static byte[] read(String aInputFileName){
-        File file = new File(aInputFileName);
-        byte[] result = new byte[(int)file.length()];
-        try {
-            InputStream input = null;
-            try {
-                int totalBytesRead = 0;
-                input = new BufferedInputStream(new FileInputStream(file));
-                while(totalBytesRead < result.length){
-                    int bytesRemaining = result.length - totalBytesRead;
-                    //input.read() returns -1, 0, or more :
-                    int bytesRead = input.read(result, totalBytesRead, bytesRemaining);
-                    if (bytesRead > 0){
-                        totalBytesRead = totalBytesRead + bytesRead;
-                    }
-                }
-            }
-            finally {
-                input.close();
-            }
-        }
-        catch (FileNotFoundException ex) {
-        }
-        catch (IOException ex) {
-        }
-        return result;
     }
 }
